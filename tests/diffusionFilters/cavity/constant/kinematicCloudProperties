@@ -1,0 +1,90 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      kinematicCloudProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solution
+{
+    active          true;
+    coupled         false;
+    transient       yes;
+    cellValueSourceCorrection off;
+    maxCo           0.3;
+
+    interpolationSchemes
+    {
+        rho             cell;
+        U               cellPoint;
+        mu              cell;
+    }
+
+    integrationSchemes
+    {
+        U               Euler;
+    }
+}
+
+constantProperties
+{
+    rho0            964;
+    constantVolume  true;
+}
+
+subModels
+{
+    particleForces
+    {
+ //       sphereDrag;
+ //       gravity;
+    }
+
+    injectionModels
+    {
+        model1
+        {
+            type            manualInjection;
+            massTotal       0;
+            parcelBasisType fixed;
+            nParticle       1;
+            SOI             0;
+            positionsFile   "kinematicCloudPositions";
+            U0              (0 0 0);
+            sizeDistribution
+            {
+                type        fixedValue;
+                fixedValueDistribution
+                {
+                    value   0.01;
+                }
+            }
+        }
+    }
+
+    dispersionModel none;
+
+    patchInteractionModel none;
+
+    surfaceFilmModel none;
+
+    stochasticCollisionModel none;
+
+    collisionModel none;
+
+}
+
+cloudFunctions
+{}
+
+
+// ************************************************************************* //
