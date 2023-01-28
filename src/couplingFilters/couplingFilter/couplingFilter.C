@@ -146,6 +146,225 @@ Foam::couplingFilter::diffusionTime()
 }
 
 
+void Foam::couplingFilter::filter
+(
+    volScalarField::Internal& s
+)
+{    
+
+    diffusionRunTime_.setTime(startTime, startTimeIndex);
+    diffusionRunTime_.setEndTime(diffusionTime_);
+    diffusionRunTime_.setDeltaT(diffusionDeltaT_);
+    
+    volScalarField diffWorkField
+    (
+        IOobject
+        (
+            "tempDiffScalar",
+            diffusionRunTime_.timeName(),
+            diffusionMesh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        diffusionMesh_,
+        dimensionedScalar
+        (
+            "zero",
+            s.dimensions(),
+            scalar(0.0)
+        ),
+        zeroGradientFvPatchScalarField::typeName
+        
+    );
+
+    scalarField& diffWorkFieldInterFeildRef = diffWorkField.ref();
+    
+    diffWorkFieldInterFeildRef = s;
+    
+    if (implicitFvm_.value())
+    {
+        while (diffusionRunTime_.loop())
+        {
+            if (diffusionRunTime_.timeIndex() == 1)
+            {
+                while (simple_.correctNonOrthogonal())
+                {
+                    solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
+                }
+            }
+            else
+            {
+                solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
+            }
+        }
+
+    }
+    else
+    {
+        while (diffusionRunTime_.loop())
+        {
+            if (diffusionRunTime_.timeIndex() == 1)
+            {
+                while (simple_.correctNonOrthogonal())
+                {
+                    solve(fvm::ddt(diffWorkField) - fvc::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
+                }
+            }
+            else
+            {
+                solve(fvm::ddt(diffWorkField) - fvc::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
+            }
+        }
+    }
+    
+    s = diffWorkField.internalField();
+    
+}
+
+void Foam::couplingFilter::filter
+(
+    volVectorField::Internal& s
+)
+{
+
+    diffusionRunTime_.setTime(startTime, startTimeIndex);
+    diffusionRunTime_.setEndTime(diffusionTime_);
+    diffusionRunTime_.setDeltaT(diffusionDeltaT_);
+    
+    volVectorField diffWorkField
+    (
+        IOobject
+        (
+            "tempDiffVector",
+            diffusionRunTime_.timeName(),
+            diffusionMesh_,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        diffusionMesh_,
+        dimensionedVector
+        (
+            "zero",
+            s.dimensions(),
+            vector::zero
+        ),
+        zeroGradientFvPatchVectorField::typeName
+        
+    );
+
+    vectorField& diffWorkFieldInterFeildRef = diffWorkField.ref();
+    
+    diffWorkFieldInterFeildRef = s;
+    
+    if (implicitFvm_.value())
+    {
+        while (diffusionRunTime_.loop())
+        {
+            if (diffusionRunTime_.timeIndex() == 1)
+            {
+                while (simple_.correctNonOrthogonal())
+                {
+                    solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
+                }
+            }
+            else
+            {
+                solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
+            }
+        }
+
+    }
+    else
+    {
+        while (diffusionRunTime_.loop())
+        {
+            if (diffusionRunTime_.timeIndex() == 1)
+            {
+                while (simple_.correctNonOrthogonal())
+                {
+                    solve(fvm::ddt(diffWorkField) - fvc::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
+                }
+            }
+            else
+            {
+                solve(fvm::ddt(diffWorkField) - fvc::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
+            }
+        }
+    }
+    
+    s = diffWorkField.internalField();
+
+}
+
+
+
+// Return the filtered field from the given volScalarField F
+
+void Foam::couplingFilter::filter
+(
+    volScalarField& F
+)
+{
+    filter(F.internalFieldRef()); 
+}
+
+
+void Foam::couplingFilter::filter
+(
+    volVectorField& F
+)
+{
+    filter(F.internalFieldRef()); 
+}
+
+// Return the filtered field from the given volScalarField F
+tmp<volScalarField>
+Foam::couplingFilter::filteredField(const volScalarField& F)
+{
+
+    tmp<volScalarField> tF
+    (
+        volScalarField::New
+        (
+            "tF",
+            mesh_,
+            F.dimensions()
+        )
+    );
+
+    volScalarField& S = tF.ref();
+
+    filter(S);
+
+    return tF;
+
+}
+
+// Return the filtered field from the given volScalarField F
+tmp<volVectorField>
+Foam::couplingFilter::filteredField(const volVectorField& F)
+{
+
+    tmp<volVectorField> tF
+    (
+        volVectorField::New
+        (
+            "tF",
+            mesh_,
+            F.dimensions()
+        )
+    );
+
+    volVectorField& S = tF.ref();
+
+    filter(S);
+
+    return tF;
+    
+}
+
+/*
+
 //- update record list from explicit diffusion that need to reverse diffusion calculation      
 void Foam::couplingFilter::preExplicit(const volScalarField& s)
 {
@@ -566,195 +785,36 @@ Foam::couplingFilter::reverseExplicit(const volVectorField& F)
     return filteredField;
 }
 
+*/
 
-
-// Return the filtered field from the given volScalarField F
+/*
 tmp<volScalarField>
-Foam::couplingFilter::filteredField(const volScalarField& F)
-{
-    if (implicitFvm_.value())
-    {
-        
-        diffusionRunTime_.setEndTime(diffusionTime_);
-        diffusionRunTime_.setDeltaT(diffusionDeltaT_);
-        
-        tmp<volScalarField> tF
-        (
-            volScalarField::New
-            (
-                "tF",
-                mesh_,
-                F.dimensions()
-            )
-        );
-
-        volScalarField& S = tF.ref();
-        
-        S = F;
-        
-        scalarField& iS = S;
-        
-        volScalarField diffWorkField
-        (
-            IOobject
-            (
-                "tempDiffScalar",
-                diffusionRunTime_.timeName(),
-                diffusionMesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            diffusionMesh_,
-            dimensionedScalar
-            (
-                "zero",
-                S.dimensions(),
-                scalar(0.0)
-            ),
-            zeroGradientFvPatchScalarField::typeName
-            
-        );
-
-        
-        scalarField& diffWorkFieldInterFeildRef = diffWorkField.ref();
-        
-        diffWorkFieldInterFeildRef = iS;
-        
-        while (simple_.loop())
-        {
-            if (diffusionRunTime_.timeIndex() == 1)
-            {
-                while (simple_.correctNonOrthogonal())
-                {
-                    solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
-                }
-            }
-            else
-            {
-                solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
-            }
-        }
-        
-        iS = diffWorkFieldInterFeildRef;
-        
-        S.correctBoundaryConditions();
-        
-        diffusionRunTime_.setTime(startTime, startTimeIndex);
-        
-        return tF;
-
-    }
-    else
-    {
-        return reverseExplicit(F);
-    }
-}
-
-
-tmp<volVectorField>
-Foam::couplingFilter::filteredField(const volVectorField& F)
-{
-    if (implicitFvm_.value())
-    {
-        
-        diffusionRunTime_.setEndTime(diffusionTime_);
-        diffusionRunTime_.setDeltaT(diffusionDeltaT_);
-        
-        tmp<volVectorField> tF
-        (
-            volVectorField::New
-            (
-                "tF",
-                mesh_,
-                F.dimensions()
-            )
-        );
-
-        volVectorField& S = tF.ref();
-        
-        S = F;
-        
-        vectorField& iS = S;
-        
-        volVectorField diffWorkField
-        (
-            IOobject
-            (
-                "tempDiffScalar",
-                diffusionRunTime_.timeName(),
-                diffusionMesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            diffusionMesh_,
-            dimensionedVector
-            (
-                "zero",
-                S.dimensions(),
-                vector::zero
-            ),
-            zeroGradientFvPatchVectorField::typeName
-                
-        );
-
-        
-        vectorField& diffWorkFieldInterFeildRef = diffWorkField.ref();
-        
-        diffWorkFieldInterFeildRef = iS;
-        
-        while (simple_.loop())
-        {
-            if (diffusionRunTime_.timeIndex() == 1)
-            {
-                while (simple_.correctNonOrthogonal())
-                {
-                    solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
-                }
-            }
-            else
-            {
-                solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField,"couplingFilterDiffusion"));
-            }
-        }
-        
-        iS = diffWorkFieldInterFeildRef;
-        
-        S.correctBoundaryConditions();
-        
-        diffusionRunTime_.setTime(startTime, startTimeIndex);
-        
-        return tF;
-
-    }
-    else
-    {
-        return reverseExplicit(F);
-    }
-}
-
-
-Foam::tmp<Foam::volScalarField::Internal> Foam::couplingFilter::filteredField
+Foam::couplingFilter::filteredField
 (
-    const volScalarField::Internal& s
+    const volScalarField& alpha,
+    const volScalarField& F
 )
-{    
-    
+{
+
+    diffusionRunTime_.setTime(startTime, startTimeIndex);   
     diffusionRunTime_.setEndTime(diffusionTime_);
     diffusionRunTime_.setDeltaT(diffusionDeltaT_);
-
-    tmp<volScalarField::Internal> tS
+    
+    tmp<volScalarField> tF
     (
-        volScalarField::Internal::New
+        volScalarField::New
         (
-            "tS",
+            "tF",
             mesh_,
-            dimensionedScalar(s.dimensions(), 0.0)
+            F.dimensions()
         )
     );
 
-    scalarField& S = tS.ref();
+    volScalarField& S = tF.ref();
     
-    S = s;
+    S = F;
+    
+    scalarField& iS = S;
     
     volScalarField diffWorkField
     (
@@ -770,7 +830,7 @@ Foam::tmp<Foam::volScalarField::Internal> Foam::couplingFilter::filteredField
         dimensionedScalar
         (
             "zero",
-            s.dimensions(),
+            S.dimensions(),
             scalar(0.0)
         ),
         zeroGradientFvPatchScalarField::typeName
@@ -780,200 +840,11 @@ Foam::tmp<Foam::volScalarField::Internal> Foam::couplingFilter::filteredField
     
     scalarField& diffWorkFieldInterFeildRef = diffWorkField.ref();
     
-    diffWorkFieldInterFeildRef = S;
+    diffWorkFieldInterFeildRef = iS;
+
     
     if (implicitFvm_.value())
     {
-        while (diffusionRunTime_.loop())
-        {
-            if (diffusionRunTime_.timeIndex() == 1)
-            {
-                while (simple_.correctNonOrthogonal())
-                {
-                    solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField));
-                }
-            }
-            else
-            {
-                solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField));
-            }
-        }
-
-    }
-    else
-    {
-        while (diffusionRunTime_.loop())
-        {
-            if (diffusionRunTime_.timeIndex() == 1)
-            {
-                while (simple_.correctNonOrthogonal())
-                {
-                    solve(fvm::ddt(diffWorkField) - fvc::laplacian(DT, diffWorkField));
-                }
-            }
-            else
-            {
-                solve(fvm::ddt(diffWorkField) - fvc::laplacian(DT, diffWorkField));
-            }
-        }
-    }
-    
-    S = diffWorkField.internalField();
-    
-    diffusionRunTime_.setTime(startTime, startTimeIndex);
-
-    return tS;
-}
-
-Foam::tmp<Foam::volVectorField::Internal> Foam::couplingFilter::filteredField
-(
-    const volVectorField::Internal& s
-)
-{
-    
-    diffusionRunTime_.setEndTime(diffusionTime_);
-    diffusionRunTime_.setDeltaT(diffusionDeltaT_);
-    
-    tmp<volVectorField::Internal> tS
-    (
-        volVectorField::Internal::New
-        (
-            "tS",
-            mesh_,
-            dimensionedVector(s.dimensions(), vector::zero)
-        )
-    );
-
-    vectorField& S = tS.ref();
-    
-    S = s;
-    
-    volVectorField diffWorkField
-    (
-        IOobject
-        (
-            "tempDiffVector",
-            diffusionRunTime_.timeName(),
-            diffusionMesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        diffusionMesh_,
-        dimensionedVector
-        (
-            "zero",
-            s.dimensions(),
-            vector::zero
-        ),
-        zeroGradientFvPatchVectorField::typeName
-        
-    );
-
-    
-    vectorField& diffWorkFieldInterFeildRef = diffWorkField.ref();
-    
-    diffWorkFieldInterFeildRef = S;
-    
-    if (implicitFvm_.value())
-    {
-        while (diffusionRunTime_.loop())
-        {
-            if (diffusionRunTime_.timeIndex() == 1)
-            {
-                while (simple_.correctNonOrthogonal())
-                {
-                    solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField));
-                }
-            }
-            else
-            {
-                solve(fvm::ddt(diffWorkField) - fvm::laplacian(DT, diffWorkField));
-            }
-        }
-
-    }
-    else
-    {
-        while (diffusionRunTime_.loop())
-        {
-            if (diffusionRunTime_.timeIndex() == 1)
-            {
-                while (simple_.correctNonOrthogonal())
-                {
-                    solve(fvm::ddt(diffWorkField) - fvc::laplacian(DT, diffWorkField));
-                }
-            }
-            else
-            {
-                solve(fvm::ddt(diffWorkField) - fvc::laplacian(DT, diffWorkField));
-            }
-        }
-    }
-    
-    S = diffWorkField.internalField();
-    
-    diffusionRunTime_.setTime(startTime, startTimeIndex);
-
-    return tS;
-}
-
-
-
-tmp<volScalarField>
-Foam::couplingFilter::filteredField
-(
-    const volScalarField& alpha,
-    const volScalarField& F
-)
-{
-    if (implicitFvm_.value())
-    {
-        
-        diffusionRunTime_.setEndTime(diffusionTime_);
-        diffusionRunTime_.setDeltaT(diffusionDeltaT_);
-        
-        tmp<volScalarField> tF
-        (
-            volScalarField::New
-            (
-                "tF",
-                mesh_,
-                F.dimensions()
-            )
-        );
-
-        volScalarField& S = tF.ref();
-        
-        S = F;
-        
-        scalarField& iS = S;
-        
-        volScalarField diffWorkField
-        (
-            IOobject
-            (
-                "tempDiffScalar",
-                diffusionRunTime_.timeName(),
-                diffusionMesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            diffusionMesh_,
-            dimensionedScalar
-            (
-                "zero",
-                S.dimensions(),
-                scalar(0.0)
-            ),
-            zeroGradientFvPatchScalarField::typeName
-            
-        );
-
-        
-        scalarField& diffWorkFieldInterFeildRef = diffWorkField.ref();
-        
-        diffWorkFieldInterFeildRef = iS;
-        
         while (simple_.loop())
         {
             if (diffusionRunTime_.timeIndex() == 1)
@@ -988,20 +859,32 @@ Foam::couplingFilter::filteredField
                 solve(fvm::ddt(diffWorkField) - fvm::laplacian(fvc::interpolate(alpha)*DT, diffWorkField,"couplingFilterDiffusion"));
             }
         }
-        
-        iS = diffWorkFieldInterFeildRef;
-        
-        S.correctBoundaryConditions();
-        
-        diffusionRunTime_.setTime(startTime, startTimeIndex);
-        
-        return tF;
-
     }
     else
     {
-        return reverseExplicit(F);
+        while (diffusionRunTime_.loop())
+        {
+            if (diffusionRunTime_.timeIndex() == 1)
+            {
+                while (simple_.correctNonOrthogonal())
+                {
+                    solve(fvm::ddt(diffWorkField) - fvc::laplacian(fvc::interpolate(alpha)*DT, diffWorkField,"couplingFilterDiffusion"));
+                }
+            }
+            else
+            {
+                solve(fvm::ddt(diffWorkField) - fvc::laplacian(fvc::interpolate(alpha)*DT, diffWorkField,"couplingFilterDiffusion"));
+            }
+        }
     }
+
+    iS = diffWorkFieldInterFeildRef;
+    
+    S.correctBoundaryConditions();
+    
+    return tF;
+
+
 }
 
 
@@ -1013,54 +896,54 @@ Foam::couplingFilter::filteredField
 )
 {
 
-     if (implicitFvm_.value())
-    {
-               
-        diffusionRunTime_.setEndTime(diffusionTime_);
-        diffusionRunTime_.setDeltaT(diffusionDeltaT_);
-        
-        tmp<volVectorField> tF
+    diffusionRunTime_.setTime(startTime, startTimeIndex);     
+    diffusionRunTime_.setEndTime(diffusionTime_);
+    diffusionRunTime_.setDeltaT(diffusionDeltaT_);
+    
+    tmp<volVectorField> tF
+    (
+        volVectorField::New
         (
-            volVectorField::New
-            (
-                "tF",
-                mesh_,
-                F.dimensions()
-            )
-        );
+            "tF",
+            mesh_,
+            F.dimensions()
+        )
+    );
 
-        volVectorField& S = tF.ref();
-        
-        S = F;
-        
-        vectorField& iS = S;
-        
-        volVectorField diffWorkField
+    volVectorField& S = tF.ref();
+    
+    S = F;
+    
+    vectorField& iS = S;
+    
+    volVectorField diffWorkField
+    (
+        IOobject
         (
-            IOobject
-            (
-                "tempDiffScalar",
-                diffusionRunTime_.timeName(),
-                diffusionMesh_,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
+            "tempDiffScalar",
+            diffusionRunTime_.timeName(),
             diffusionMesh_,
-            dimensionedVector
-            (
-                "zero",
-                S.dimensions(),
-                vector::zero
-            ),
-            zeroGradientFvPatchVectorField::typeName
-                
-        );
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        diffusionMesh_,
+        dimensionedVector
+        (
+            "zero",
+            S.dimensions(),
+            vector::zero
+        ),
+        zeroGradientFvPatchVectorField::typeName
+            
+    );
 
-        
-        vectorField& diffWorkFieldInterFeildRef = diffWorkField.ref();
-        
-        diffWorkFieldInterFeildRef = iS;
-        
+    
+    vectorField& diffWorkFieldInterFeildRef = diffWorkField.ref();
+    
+    diffWorkFieldInterFeildRef = iS;
+    
+    if (implicitFvm_.value())
+    {
         while (simple_.loop())
         {
             if (diffusionRunTime_.timeIndex() == 1)
@@ -1075,20 +958,34 @@ Foam::couplingFilter::filteredField
                 solve(fvm::ddt(diffWorkField) - fvm::laplacian(fvc::interpolate(alpha)*DT, diffWorkField,"couplingFilterDiffusion"));
             }
         }
-        
-        iS = diffWorkFieldInterFeildRef;
-        
-        S.correctBoundaryConditions();
-        
-        diffusionRunTime_.setTime(startTime, startTimeIndex);
-        
-        return tF;
     }
     else
     {
-        return reverseExplicit(F);
+        while (diffusionRunTime_.loop())
+        {
+            if (diffusionRunTime_.timeIndex() == 1)
+            {
+                while (simple_.correctNonOrthogonal())
+                {
+                    solve(fvm::ddt(diffWorkField) - fvc::laplacian(fvc::interpolate(alpha)*DT, diffWorkField,"couplingFilterDiffusion"));
+                }
+            }
+            else
+            {
+                solve(fvm::ddt(diffWorkField) - fvc::laplacian(fvc::interpolate(alpha)*DT, diffWorkField,"couplingFilterDiffusion"));
+            }
+        }
     }
-}
 
+    iS = diffWorkFieldInterFeildRef;
+    
+    S.correctBoundaryConditions();
+    
+    diffusionRunTime_.setTime(startTime, startTimeIndex);
+    
+    return tF;
+
+}
+*/
 
 // ************************************************************************* //

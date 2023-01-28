@@ -151,7 +151,27 @@ class couplingFilter
         //- Return access to the Diffusion time steps
         inline scalar& diffusionDeltaT();
         
-                
+
+        //- Return the diffused field obtained from the given volScalarField s
+        void filter( volScalarField::Internal& s);
+
+        //- Return the diffused field obtained from the given volVectorField s
+        void filter( volVectorField::Internal& s);
+
+
+        //- Return the filtered field from the given volScalarField F
+        void filter( volScalarField& F);
+        
+        void filter( volVectorField& F);
+
+
+        //- Return the filtered field from the given volScalarField F
+        tmp<volScalarField> filteredField(const volScalarField& F);
+        
+        tmp<volVectorField> filteredField(const volVectorField& F);
+
+/*
+        
         //- update record list from explicit diffusion that need to reverse diffusion calculation
         void preExplicit(const volScalarField& s);
         
@@ -162,26 +182,17 @@ class couplingFilter
         tmp<volScalarField> reverseExplicit(const volScalarField& F);
         
         tmp<volVectorField> reverseExplicit(const volVectorField& F);
-        
 
-        //- Return the filtered field from the given volScalarField F
-        tmp<volScalarField> filteredField(const volScalarField& F);
-        
-        tmp<volVectorField> filteredField(const volVectorField& F);
-        
+*/
+
+/*
         //- Return the filtered field from the given volScalarField F and alpha field
         tmp<volScalarField> filteredField(const volScalarField& alpha, const volScalarField& F);
         
         tmp<volVectorField> filteredField(const volScalarField& alpha, const volVectorField& F);
+*/
+
     
-        
-        //- Return the diffused field obtained from the given volScalarField s
-        tmp<volScalarField::Internal> filteredField(const volScalarField::Internal& s);
-
-        //- Return the diffused field obtained from the given volVectorField s
-        tmp<volVectorField::Internal> filteredField(const volVectorField::Internal& s);
-
-
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
