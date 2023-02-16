@@ -102,7 +102,23 @@ volScalarField muc
     rhoc*continuousPhaseTransport.nu()
 );
 
-Info << "Creating field alphac\n" << endl;
+Info << "Creating field alpha\n" << endl;
+
+volScalarField alphap
+(
+    IOobject
+    (
+        "alphap",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedScalar(dimless, Zero)
+);
+
+
 // alphac must be constructed before the cloud
 // so that the drag-models can find it
 volScalarField alphac

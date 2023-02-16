@@ -72,6 +72,9 @@ int main(int argc, char *argv[])
         volScalarField  fAlphap("fAlphap", filterModel.filteredField(alphap));
         fAlphap.write(); 
 
+        volVectorField  fU("fU", filterModel.filteredField(alphap,U));
+        fU.write();
+
     }
 
     Info<< "\nEnd\n" << nl;

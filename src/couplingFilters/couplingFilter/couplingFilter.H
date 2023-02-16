@@ -83,7 +83,6 @@ class couplingFilter
     dimensionedScalar startTime;
     label startTimeIndex;
     
-    
     //- Phase diffusion band width
     scalar diffusionBandWidth_;
         
@@ -97,13 +96,17 @@ class couplingFilter
     //- Scheme True if use adjustDeltaT for explicit
     demandDrivenEntry<bool> adjustDeltaT_;
     
-    //- explicit data    
-    PtrList<surfaceScalarField> stepFlux_;
-    PtrList<volScalarField> stepScalarField_;
-    scalarList deltaTList_;
     
     //*******************************variables in grid calculation*********************************//      
-        
+
+    volScalarField  tempDiffScalar_;
+
+    volVectorField  tempDiffVector_;
+
+    scalarField&    tempDiffScalarInterFeildRef_;
+
+    vectorField&    tempDiffVectorInterFeildRef_;
+
 
     public:
   
@@ -170,29 +173,13 @@ class couplingFilter
         
         tmp<volVectorField> filteredField(const volVectorField& F);
 
-/*
-        
-        //- update record list from explicit diffusion that need to reverse diffusion calculation
-        void preExplicit(const volScalarField& s);
-        
-        void preExplicit(const volScalarField& alpha, const volScalarField& s);
-        
-        
-        //- reverse explicit laplacian diffusion calculation
-        tmp<volScalarField> reverseExplicit(const volScalarField& F);
-        
-        tmp<volVectorField> reverseExplicit(const volVectorField& F);
 
-*/
-
-/*
         //- Return the filtered field from the given volScalarField F and alpha field
         tmp<volScalarField> filteredField(const volScalarField& alpha, const volScalarField& F);
         
         tmp<volVectorField> filteredField(const volScalarField& alpha, const volVectorField& F);
-*/
 
-    
+
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

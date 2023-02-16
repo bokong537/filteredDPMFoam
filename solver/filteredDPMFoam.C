@@ -99,19 +99,20 @@ int main(int argc, char *argv[])
 
         Info<< "Evolving " << kinematicCloud.name() << endl;
 
-        UcFiltered = Uc;
-        filterModel.filter(UcFiltered);
+        UcFiltered = alphac*Uc;
+        UcFiltered = filterModel.filteredField(UcFiltered)/alphac;
+
         kinematicCloud.evolve();
 
         // Update continuous phase volume fraction field
-        volScalarField alphap("theta", kinematicCloud.theta());
+        alphap = kinematicCloud.theta();
         filterModel.filter(alphap);
 
         alphac = max(1.0 - alphap, alphacMin);
         alphac.correctBoundaryConditions();
         alphacf = fvc::interpolate(alphac);
         alphaPhic = alphacf*phic;
-
+        
         filterModel.filter(kinematicCloud.UTrans());
         filterModel.filter(kinematicCloud.UCoeff());
   
