@@ -10,11 +10,16 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      turbulenceProperties.air;
+    object      transportProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-simulationType  laminar;
+continuousPhase water;
+
+rho.water         1000;
+
+transportModel  Newtonian;
+nu              1e-05;
 
 
 // ************************************************************************* //

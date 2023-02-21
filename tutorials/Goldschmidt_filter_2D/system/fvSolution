@@ -32,7 +32,7 @@ solvers
         smoother        GaussSeidel;
     }
 
-    "(U.air|k|omega)"
+    "(U.water|k|omega)"
     {
         solver          smoothSolver;
         smoother        symGaussSeidel;
@@ -40,13 +40,65 @@ solvers
         relTol          0.1;
     }
 
-    "(U.air|k|omega)Final"
+    "(U.water|k|omega)Final"
     {
         solver          smoothSolver;
         smoother        symGaussSeidel;
         tolerance       1e-05;
         relTol          0;
     }
+
+
+    
+    "tempDiffScalar"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0;
+    }
+
+    "tempDiffVector"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0;
+    }
+    
+    "tempGasDiffScalar"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0;
+    }
+    
+    "tempGasDiffVector"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0;
+    }
+    
+    "tempExplicitDiffScalar"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0;
+    }
+    
+    "tempExplicitDiffVector"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0;
+    }
+    
+
 }
 
 PIMPLE
@@ -57,6 +109,11 @@ PIMPLE
     nNonOrthogonalCorrectors 0;
     pRefCell        0;
     pRefValue       0;
+}
+
+SIMPLE
+{
+    nNonOrthogonalCorrectors 0;
 }
 
 

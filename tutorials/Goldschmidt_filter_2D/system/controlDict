@@ -10,16 +10,39 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      transportProperties;
+    object      controlDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-continuousPhase air;
+application     filteredDPMFoam;
 
-rho.air         1.2;
+startFrom       latestTime;
 
-transportModel  Newtonian;
-nu              1e-05;
+startTime       0;
+
+stopAt          endTime;
+
+endTime         5;
+
+deltaT          2e-5;
+
+writeControl    runTime;
+
+writeInterval   0.01;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
 
 
 // ************************************************************************* //

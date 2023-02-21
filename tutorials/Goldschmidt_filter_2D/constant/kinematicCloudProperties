@@ -23,9 +23,9 @@ solution
 
     interpolationSchemes
     {
-        rho.air         cell;
-        U.air           cellPoint;
-        mu.air          cell;
+        rho.water         cell;
+        UcFiltered           cellPoint;
+        mu.water          cell;
     }
 
     integrationSchemes
@@ -37,7 +37,7 @@ solution
     {
         schemes
         {
-            U semiImplicit 1;
+            U            semiImplicit 1;
         }
     }
 }
@@ -64,7 +64,7 @@ subModels
     {
         ErgunWenYuDrag
         {
-            alphac alpha.air;
+            alphac alpha.water;
         }
         gravity;
     }
@@ -85,7 +85,7 @@ subModels
                 type        fixedValue;
                 fixedValueDistribution
                 {
-                    value   0.0025;
+                    value   0.001;
                 }
             }
         }
@@ -114,7 +114,7 @@ subModels
 
     pairCollisionCoeffs
     {
-        maxInteractionDistance  0.0025;
+        maxInteractionDistance  0.001;
 
         writeReferredParticleCloud no;
 
@@ -144,7 +144,7 @@ subModels
             cohesionEnergyDensity 0;
         };
 
-        U     U.air;
+        U     U.water;
     }
 
     stochasticCollisionModel none;

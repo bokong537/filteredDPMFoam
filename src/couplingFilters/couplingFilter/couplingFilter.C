@@ -190,15 +190,11 @@ void Foam::couplingFilter::filter
 )
 {    
 
-
-    if(tempDiffScalar_.dimensions() != s.dimensions())
-        tempDiffScalar_.dimensions().reset(s.dimensions());
-
     diffusionRunTime_.setTime(startTime, startTimeIndex);
     diffusionRunTime_.setEndTime(diffusionTime_);
     diffusionRunTime_.setDeltaT(diffusionDeltaT_);
     
-    tempDiffScalarInterFeildRef_ = s;
+    tempDiffScalarInterFeildRef_ = s.field();
     tempDiffScalar_.correctBoundaryConditions();
     
     if (implicitFvm_.value())
@@ -266,8 +262,7 @@ void Foam::couplingFilter::filter
         }
     }
     
-    scalarField& sRef = s;
-    sRef = tempDiffScalarInterFeildRef_;
+    s.field() = tempDiffScalarInterFeildRef_;
     
 }
 
@@ -277,14 +272,11 @@ void Foam::couplingFilter::filter
 )
 {
 
-    if(tempDiffVector_.dimensions() != s.dimensions())
-        tempDiffVector_.dimensions().reset(s.dimensions());
-
     diffusionRunTime_.setTime(startTime, startTimeIndex);
     diffusionRunTime_.setEndTime(diffusionTime_);
     diffusionRunTime_.setDeltaT(diffusionDeltaT_);
     
-    tempDiffVectorInterFeildRef_ = s;
+    tempDiffVectorInterFeildRef_ = s.field();
     tempDiffVector_.correctBoundaryConditions();
 
     if (implicitFvm_.value())
@@ -352,8 +344,7 @@ void Foam::couplingFilter::filter
         }
     }
     
-    vectorField& sRef = s;
-    sRef = tempDiffVectorInterFeildRef_;
+    s.field() = tempDiffVectorInterFeildRef_;
 
 }
 
@@ -398,8 +389,6 @@ Foam::couplingFilter::filteredField(const volScalarField& F)
 
     filter(S);
 
-    S.correctBoundaryConditions();
-
     return tF;
 
 }
@@ -421,8 +410,6 @@ Foam::couplingFilter::filteredField(const volVectorField& F)
     volVectorField& S = tF.ref();
 
     filter(S);
-
-    S.correctBoundaryConditions();
 
     return tF;
     
@@ -455,7 +442,7 @@ Foam::couplingFilter::filteredField
 
     volScalarField& S = tF.ref();
     
-    scalarField& iS = S;
+    scalarField& iS = S.field();
     
     tempDiffScalarInterFeildRef_ = iS;
     
@@ -559,7 +546,7 @@ Foam::couplingFilter::filteredField
 
     volVectorField& S = tF.ref();
     
-    vectorField& iS = S;
+    vectorField& iS = S.field();
     
     tempDiffVectorInterFeildRef_ = iS;
     
